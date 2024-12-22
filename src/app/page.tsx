@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
+import RoleSelection from "@/components/pages/login/roleSelectionPage";
 
 export default function Home() {
   return (
     <main>
-      <Button>Button</Button>
+      <RoleSelection />
     </main>
   );
 }
