@@ -32,7 +32,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.variable} antialiased dark`}>
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-950 to-slate-950" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-950 to-slate-950 z-0" />
           {children}
         </div>
       </body>
