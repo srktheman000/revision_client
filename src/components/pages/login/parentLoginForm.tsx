@@ -29,8 +29,8 @@ const ParentLoginForm = () => {
     <Card className="w-full max-w-2xl relative bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <BackButton fallbackPath={"/"} />
       <CardHeader className="space-y-6 text-center">
-        <div className="mx-auto w-20 h-20 flex items-center justify-center bg-blue-500/10 rounded-full">
-          <Users className="w-10 h-10 text-blue-500" />
+        <div className="mx-auto w-20 h-20 flex items-center justify-center bg-secondary rounded-full">
+          <Users className="w-10 h-10 text-primary" />
         </div>
         <div className="space-y-3">
           <CardTitle className="text-3xl font-bold">Parent Login</CardTitle>
@@ -94,28 +94,18 @@ const ParentLoginForm = () => {
                 Remember me
               </Label>
             </div>
-            <Button
-              variant="link"
-              className="text-blue-500 hover:text-blue-400 p-0 text-base"
-            >
+            <Button variant="link" className="p-0 text-base">
               Forgot password?
             </Button>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-500 h-12 text-lg"
-          >
+          <Button type="submit" className="w-full h-12 text-lg">
             Sign in
           </Button>
 
           <div className="text-center text-base text-muted-foreground">
             New parent account?{" "}
-            <Button
-              asChild
-              variant="link"
-              className="text-blue-500 hover:text-blue-400 p-0 text-base"
-            >
+            <Button asChild variant="link" className="p-0 text-base">
               <Link href="/signup">Register here</Link>
             </Button>
           </div>

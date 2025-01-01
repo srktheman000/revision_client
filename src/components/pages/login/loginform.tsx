@@ -26,11 +26,11 @@ const StudentLoginForm = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-950 to-slate-950" />
+      <div className="absolute inset-0 bg-gradient-to-br from-background to-secondary" />
       <Card className="w-full max-w-md relative bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <CardHeader className="space-y-4 text-center">
-          <div className="mx-auto w-16 h-16 flex items-center justify-center bg-blue-500/10 rounded-full">
-            <School className="w-8 h-8 text-blue-500" />
+          <div className="mx-auto w-16 h-16 flex items-center justify-center bg-secondary rounded-full">
+            <School className="w-8 h-8 text-primary" />
           </div>
           <div className="space-y-2">
             <CardTitle className="text-2xl font-bold">Student Login</CardTitle>
@@ -89,29 +89,18 @@ const StudentLoginForm = () => {
                   Remember me
                 </Label>
               </div>
-              <Button
-                variant="link"
-                className="text-blue-500 hover:text-blue-400 p-0"
-              >
+              <Button variant="link" className="p-0">
                 Forgot password?
               </Button>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-500"
-            >
+            <Button type="submit" className="w-full">
               Sign in
             </Button>
 
             <div className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?
-              <Button
-                variant="link"
-                className="text-blue-500 hover:text-blue-400 p-0"
-              >
-                Sign up
-              </Button>
+              Don&apos;t have an account?{" "}
+              <Button className="p-0">Sign up</Button>
             </div>
           </form>
         </CardContent>
