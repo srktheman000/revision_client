@@ -11,6 +11,7 @@ import {
   BookOpen as EnglishIcon,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRouter } from "next/navigation";
 
 // Define subjects data with appropriate icons and descriptions
 const subjects = [
@@ -57,10 +58,10 @@ const subjects = [
 ];
 
 export default function LandingPage() {
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-background w-full">
       <StudentHeader name="Sohan" />
-
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-8">
           {/* Welcome Section */}
@@ -99,7 +100,7 @@ export default function LandingPage() {
                         grade={subject.grade}
                         imageUrl={subject.imageUrl}
                         status="Start Learning"
-                        onClick={() => console.log(`Starting ${subject.name}`)}
+                        onClick={() => router.push("/chat")}
                       />
                     ))}
                 </div>

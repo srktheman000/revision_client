@@ -78,3 +78,20 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.scroll-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-area::-webkit-scrollbar-thumb {
+  background: #4b5563; /* Gray */
+  border-radius: 4px;
+}
+
+.scroll-area::-webkit-scrollbar-thumb:hover {
+  background: #374151; /* Darker gray */
+}
+
+.scroll-area::-webkit-scrollbar-track {
+  background: #1f2937; /* Dark gray */
+}

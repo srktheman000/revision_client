@@ -31,9 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.variable} antialiased dark`}>
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
-          {children}
-        </div>
+        <div className="min-h-screen bg-background ">{children}</div>
       </body>
     </html>
   );
