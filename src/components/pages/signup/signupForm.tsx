@@ -44,8 +44,8 @@ interface Student {
   username: string;
   fullName: string;
   grade: string;
-  password: string; // Add this
-  showPassword: boolean; // Add this
+  password: string;
+  showPassword: boolean;
 }
 
 interface ParentFormData {
@@ -78,6 +78,8 @@ const ParentRegistrationForm = () => {
       username: "",
       fullName: "",
       grade: "",
+      password: generateRandomPassword(),
+      showPassword: false,
     };
     setFormData({
       ...formData,
@@ -88,7 +90,7 @@ const ParentRegistrationForm = () => {
   const handleStudentChange = (
     studentId: string,
     field: keyof Student,
-    value: string
+    value: boolean | string
   ) => {
     setFormData({
       ...formData,
@@ -400,7 +402,7 @@ const ParentRegistrationForm = () => {
 
                 {formData.students.length === 0 && (
                   <div className="text-center text-muted-foreground py-8">
-                    Click "Add Student" to register your children
+                    Click &quot;Add Student&quot; to register your children
                   </div>
                 )}
               </div>

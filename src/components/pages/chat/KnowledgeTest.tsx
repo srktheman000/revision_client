@@ -7,6 +7,7 @@ const KnowledgeTest: React.FC<KnowledgeTestProps> = ({ question }) => {
   const defaultQuestion: QuizQuestion = {
     text: "What's the most common way jellyfish use bioluminescence?",
     options: ["Defense against predators", "Attracting mates"],
+    correctAnswerId: "c",
   };
 
   const currentQuestion = question || defaultQuestion;

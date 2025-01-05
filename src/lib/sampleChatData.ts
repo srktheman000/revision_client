@@ -1,4 +1,6 @@
-const sampleChatData = [
+import { MessageType } from "@/types";
+
+const sampleChatData: MessageType[] = [
   {
     id: "1",
     type: "text",

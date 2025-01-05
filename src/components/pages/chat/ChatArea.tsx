@@ -6,20 +6,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import ChatMessage from "./ChatMessage";
-import chatExamples from "@/lib/simpleTextData";
 import sampleChatData from "@/lib/sampleChatData";
-
-interface Message {
-  id: string;
-  type: "text" | "timeline" | "list" | "quiz" | "summary";
-  content: any;
-  isUser: boolean;
-  isAnswered?: boolean;
-  timestamp?: Date;
-}
+import { MessageType } from "@/types";
 
 const ChatArea = () => {
-  const [messages, setMessages] = useState<Message[]>(sampleChatData);
+  const [messages, setMessages] = useState<MessageType[]>(sampleChatData);
 
   const [inputValue, setInputValue] = useState("");
   const handleSend = useCallback(() => {
@@ -42,7 +33,7 @@ const ChatArea = () => {
     if (e.key === "Enter") handleSend();
   };
 
-  const handleQuizAnswer = (messageId: string, answerId: string) => {
+  const handleQuizAnswer = (messageId: string) => {
     setMessages((prev) =>
       prev.map((msg) =>
         msg.id === messageId ? { ...msg, isAnswered: true } : msg
@@ -50,26 +41,28 @@ const ChatArea = () => {
     );
   };
 
-  const handleSummaryPointToggle = (messageId: string, pointId: string) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === messageId
-          ? {
-              ...msg,
-              content: {
-                ...msg.content,
-                points: msg.content.points.map(
-                  (point: { id: string; isToggled: boolean }) =>
-                    point.id === pointId
-                      ? { ...point, isToggled: !point.isToggled }
-                      : point
-                ),
-              },
-            }
-          : msg
-      )
-    );
-  };
+  //   const handleSummaryPointToggle = (messageId: string, pointId: string) => {
+  //     setMessages((prev) =>
+  //       prev.map((msg) =>
+  //         msg.id === messageId
+  //           ? {
+  //               ...msg,
+  //               content: {
+  //                 ...msg.content,
+  //                 points: msg.content.points.map(
+  //                   (point: { id: string; isToggled: boolean }) =>
+  //                     point.id === pointId
+  //                       ? { ...point, isToggled: !point.isToggled }
+  //                       : point
+  //                 ),
+  //               },
+  //             }
+  //           : msg
+  //       )
+  //     );
+  //   };
+
+  const handleSummaryPointToggle = () => {};
 
   return (
     <Card className="w-full min-h-[600px] h-full flex flex-col m-4 relative">

@@ -59,6 +59,7 @@ export interface ListItem {
 export interface QuizQuestion {
   text: string;
   options: string[];
+  correctAnswerId: string;
 }
 
 export interface TimelineCardProps {
@@ -79,6 +80,7 @@ export interface BaseMessage {
   type: "text" | "timeline" | "list" | "quiz" | "summary";
   isUser: boolean;
   timestamp?: Date;
+  id: string;
 }
 
 export interface TextMessage extends BaseMessage {
