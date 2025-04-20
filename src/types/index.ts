@@ -3,6 +3,11 @@ export enum Role {
   Parent = "parent",
 }
 
+export interface DecodedToken {
+  userId: string;
+  [key: string]: unknown; // Allows additional properties with string keys
+}
+
 export type Student = {
   role: Role.Student;
   name: string;

@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { cookies as nextCookies, RequestCookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
-import { DecodedToken } from "@/app/api/user/get/route";
+import { DecodedToken } from "@/types";
+// Define DecodedToken type locally
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 

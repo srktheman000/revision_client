@@ -1,11 +1,7 @@
 // src/lib/verifyUser.ts
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/backend/auth";
-
-interface DecodedToken {
-  userId: string;
-  [key: string]: unknown;
-}
+import { DecodedToken } from "@/types";
 
 async function verifyUser(): Promise<DecodedToken> {
   const cookieStore = cookies();
