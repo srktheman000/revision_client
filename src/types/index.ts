@@ -20,13 +20,6 @@ export interface Message {
   isUser: boolean;
   timestamp?: Date;
 }
-
-export interface Chapter {
-  id: number;
-  title: string;
-  sections: string[];
-}
-
 export interface TopBarProps {
   title: string;
   grade: string;

@@ -1,0 +1,13 @@
+{
+    "servers": {
+        "filesystem": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "C:/Users/Z004XY7T/Desktop/",
+                "C:/Users/Z004XY7T/Desktop/"
+            ]
+        }
+    }
+}

@@ -5,13 +5,11 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SubjectDocument } from "@/types/schemaTypes";
 
 interface SubjectCardProps {
-  name: string;
-  description?: string;
-  icon: React.ReactNode;
-  grade: string;
-  imageUrl?: string;
+  subject: SubjectDocument;
+  icon?: React.ReactNode;
   status?: "Start" | string;
   onClick?: () => void;
 }
@@ -19,14 +17,12 @@ interface SubjectCardProps {
 const defaultDescription = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.`;
 
 const SubjectCard = ({
-  name,
-  description = defaultDescription,
+  subject,
   icon,
-  grade,
-  imageUrl,
   status = "Start",
   onClick,
 }: SubjectCardProps) => {
+  const { name, description = defaultDescription, grade, imageUrl } = subject;
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden max-w-sm">
       <CardContent className="p-0">
@@ -76,7 +72,9 @@ const SubjectCard = ({
             </p>
             <div className="flex gap-2 flex-wrap">
               <Badge variant="secondary" className="text-xs py-2">
-                12 Chapters
+                {subject.chapters
+                  ? `${subject.chapters.length} Chapters`
+                  : "0 Chapters"}
               </Badge>
             </div>
           </div>

@@ -1,23 +1,10 @@
-import ParentLoginForm from "@/components/pages/login/parentLoginForm";
 import StudentLoginForm from "@/components/pages/login/studentLoginForm";
-import { Role } from "@/types";
 
-export default async function Home(paramPromise: {
-  searchParams: Promise<{ role: Role }>;
-}) {
+export default async function Login() {
   try {
-    const param = await paramPromise.searchParams;
-    const role = param.role;
-
     return (
-      <main>
-        {role === Role.Student ? (
-          <StudentLoginForm />
-        ) : role === Role.Parent ? (
-          <ParentLoginForm />
-        ) : (
-          <div>Please select a role</div>
-        )}
+      <main className="flex min-h-screen items-center justify-center">
+        <StudentLoginForm />
       </main>
     );
   } catch (error) {

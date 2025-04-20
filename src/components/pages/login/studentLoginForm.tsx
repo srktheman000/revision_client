@@ -12,25 +12,43 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { AtSign, Lock, School } from "lucide-react";
-import BackButton from "@/components/ui/backbutton";
+import { AtSign, Lock, School, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const StudentLoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Login attempted with:", { email, password });
-    router.push("/home");
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.message || "Login failed");
+      } else {
+        router.push("/home");
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Card className="w-full max-w-2xl relative bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <BackButton fallbackPath={"/"} />
       <CardHeader className="space-y-6 text-center">
         <div className="mx-auto w-20 h-20 flex items-center justify-center bg-secondary rounded-full">
           <School className="w-10 h-10 text-primary" />
@@ -38,7 +56,7 @@ const StudentLoginForm = () => {
         <div className="space-y-3">
           <CardTitle className="text-3xl font-bold">Student Login</CardTitle>
           <CardDescription className="text-xl">
-            Welcome back! Please enter your details.
+            Welcome ! Please enter your details.
           </CardDescription>
         </div>
       </CardHeader>
@@ -75,13 +93,26 @@ const StudentLoginForm = () => {
                 </div>
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
-                  className="pl-12 h-12 text-lg"
+                  className="pl-12 h-12 text-lg pr-12"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-muted-foreground focus:outline-none"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -101,9 +132,17 @@ const StudentLoginForm = () => {
             </Button>
           </div>
 
-          <Button type="submit" className="w-full h-12 text-lg">
-            Sign in
+          <Button
+            type="submit"
+            className="w-full h-12 text-lg"
+            disabled={loading}
+          >
+            {loading ? "Signing in..." : "Sign in"}
           </Button>
+
+          {error && (
+            <div className="text-red-500 text-center text-base">{error}</div>
+          )}
 
           <div className="text-center text-base text-muted-foreground">
             Don&apos;t have an account?{" "}

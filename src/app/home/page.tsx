@@ -1,67 +1,46 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import StudentHeader from "@/components/pages/homepage/StudentHeader";
 import SubjectCard from "@/components/pages/homepage/SubjectCard";
-import {
-  BookOpen,
-  Globe,
-  Building2,
-  FlaskConical,
-  BookOpen as EnglishIcon,
-} from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import useAPI from "@/hooks/useAPI";
+import { fetchUserData } from "@/utils/fetchUserData";
+import { fetchSubjectsByGrade } from "@/utils/fetchSubjectsByGrade";
+import { SubjectDocument } from "@/types/schemaTypes";
 import { useRouter } from "next/navigation";
 
-// Define subjects data with appropriate icons and descriptions
-const subjects = [
-  {
-    name: "History",
-    description:
-      "Explore the past through engaging stories of civilizations, events, and cultural developments that shaped our world. Learn about ancient civilizations, world wars, and major historical milestones.",
-    icon: <BookOpen className="h-6 w-6 text-primary" />,
-    grade: "6th",
-    imageUrl: "/api/placeholder/400/300",
-  },
-  {
-    name: "Geography",
-    description:
-      "Discover the world's physical features, climates, populations, and cultures. Study maps, landforms, and the interaction between humans and their environment.",
-    icon: <Globe className="h-6 w-6 text-primary" />,
-    grade: "6th",
-    imageUrl: "/api/placeholder/400/300",
-  },
-  {
-    name: "Civics",
-    description:
-      "Learn about citizenship, government systems, rights and responsibilities, and how society functions. Understand democracy, civic duties, and political processes.",
-    icon: <Building2 className="h-6 w-6 text-primary" />,
-    grade: "7th",
-    imageUrl: "/api/placeholder/400/300",
-  },
-  {
-    name: "Science",
-    description:
-      "Explore the natural world through physics, chemistry, and biology. Conduct experiments, understand scientific principles, and discover how things work.",
-    icon: <FlaskConical className="h-6 w-6 text-primary" />,
-    grade: "7th",
-    imageUrl: "/api/placeholder/400/300",
-  },
-  {
-    name: "English",
-    description:
-      "Develop language skills through reading, writing, speaking, and listening. Study literature, grammar, vocabulary, and effective communication.",
-    icon: <EnglishIcon className="h-6 w-6 text-primary" />,
-    grade: "8th",
-    imageUrl: "/api/placeholder/400/300",
-  },
-];
-
 export default function LandingPage() {
+  const [selectedGrade, setSelectedGrade] = useState<number>(6);
+  const [selectedSubject, setSelectedSubject] =
+    useState<SubjectDocument | null>(null);
   const router = useRouter();
+
+  // Fetch user using useAPI
+  const [userState, fetchUser] = useAPI(fetchUserData);
+  const { data: user, loading: userLoading, error: userError } = userState;
+
+  // Fetch subjects for selected grade using useAPI
+  const [subjectsState, fetchSubjects] = useAPI((...args: unknown[]) =>
+    fetchSubjectsByGrade(args[0] as number)
+  );
+  const {
+    data: gradeSubjects,
+    loading: subjectsLoading,
+    error: subjectsError,
+  } = subjectsState;
+
+  // Fetch user on mount
+  useEffect(() => {
+    fetchUser();
+    fetchSubjects(selectedGrade);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="min-h-screen bg-background w-full">
-      <StudentHeader name="Sohan" />
+      <StudentHeader name={user?.name || ""} />
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-8">
           {/* Welcome Section */}
@@ -75,41 +54,74 @@ export default function LandingPage() {
           </div>
 
           {/* Grade Selection Tabs */}
-          <Tabs defaultValue="6th" className="w-full">
+          <Tabs
+            value={selectedGrade.toString()}
+            onValueChange={(val) => {
+              const grade = Number(val);
+              setSelectedGrade(grade);
+              fetchSubjects(grade); // Call API when tab is clicked
+            }}
+            className="w-full"
+          >
             <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
-              <TabsTrigger value="6th">6th Grade</TabsTrigger>
-              <TabsTrigger value="7th">7th Grade</TabsTrigger>
-              <TabsTrigger value="8th">8th Grade</TabsTrigger>
+              <TabsTrigger value="6">6th Grade</TabsTrigger>
+              <TabsTrigger value="7">7th Grade</TabsTrigger>
+              <TabsTrigger value="8">8th Grade</TabsTrigger>
             </TabsList>
 
-            {["6th", "7th", "8th"].map((grade) => (
+            {[6, 7, 8].map((grade) => (
               <TabsContent
                 key={grade}
-                value={grade}
+                value={grade.toString()}
                 className="mt-6 animate-in slide-in-from-bottom-4"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {subjects
-                    .filter((subject) => subject.grade === grade)
-                    .map((subject, index) => (
-                      <SubjectCard
-                        key={index}
-                        name={subject.name}
-                        description={subject.description}
-                        icon={subject.icon}
-                        grade={subject.grade}
-                        imageUrl={subject.imageUrl}
-                        status="Start Learning"
-                        onClick={() => router.push("/chat")}
-                      />
-                    ))}
-                </div>
-                {subjects.filter((subject) => subject.grade === grade)
-                  .length === 0 && (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground">
-                      No subjects available for this grade yet.
-                    </p>
+                {userLoading || subjectsLoading ? (
+                  <div className="text-center py-12">Loading...</div>
+                ) : userError ? (
+                  <div className="text-center py-12 text-red-500">
+                    {userError}
+                  </div>
+                ) : subjectsError ? (
+                  <div className="text-center py-12 text-red-500">
+                    {subjectsError}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {gradeSubjects && gradeSubjects.length > 0 ? (
+                      gradeSubjects.map(
+                        (subject: SubjectDocument, index: number) => (
+                          <SubjectCard
+                            key={index}
+                            subject={subject}
+                            icon={<BookOpen className="h-6 w-6 text-primary" />}
+                            status="Start Learning"
+                            onClick={() => router.push(`/chat/${subject._id}`)}
+                          />
+                        )
+                      )
+                    ) : (
+                      <div className="text-center py-12 col-span-3">
+                        <p className="text-muted-foreground">
+                          No subjects available for this grade yet.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* Subject details section */}
+                {selectedSubject && (
+                  <div className="mt-8 p-6 border rounded bg-muted">
+                    <h2 className="text-xl font-bold mb-2">
+                      {selectedSubject.name}
+                    </h2>
+                    <p>{selectedSubject.description}</p>
+                    {/* Add more details as needed */}
+                    <button
+                      className="mt-4 text-primary underline"
+                      onClick={() => setSelectedSubject(null)}
+                    >
+                      Close
+                    </button>
                   </div>
                 )}
               </TabsContent>
