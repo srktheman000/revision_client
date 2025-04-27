@@ -1,67 +1,212 @@
+// /app/chat/[subjectid]/components/Sidebar.tsx
 "use client";
-import { useState } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ChapterChip from "@/components/ui/chapterchip";
-import SectionChip from "@/components/ui/sectionchip";
+import React, { useEffect, useState, useCallback } from "react";
+import { cn } from "@/lib/utils"; // If you don't have cn, I can show you how to write it
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area"; // From shadcn
+import { Menu, X } from "lucide-react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import apiClient from "@/lib/apiClient";
+import SessionBar from "./SessionBar";
 
-export interface ChapterData {
-  chapter_number: string;
-  chapter_name: string;
-  chapter_source: string;
-  section_count: number;
-  section_list: string[];
+interface SidebarProps {
+  isOpen: boolean;
+  toggleSidebar: () => void;
 }
 
-const Sidebar: React.FC<{
-  data: { chapter_count: number; chapter_details: ChapterData[] };
-}> = ({ data }) => {
-  const [activeChapter, setActiveChapter] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<string | null>(null);
+interface SessionItem {
+  sessionId: string;
+  title: string;
+  lastActivity: string;
+  isActive: boolean;
+}
 
-  const handleChapterClick = (chapterNumber: string) => {
-    setActiveChapter(chapterNumber === activeChapter ? null : chapterNumber);
-    setActiveSection(null);
+export function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
+  const params = useParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const subjectId = params.subjectId as string;
+  const [sessions, setSessions] = useState<SessionItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Helper to update the session query param
+  const updateSessionQuery = (sessionId: string) => {
+    console.log("Updating session query param:", sessionId);
+    const url = new URL(window.location.href);
+    url.searchParams.set("session", sessionId);
+    router.replace(url.pathname + url.search);
   };
 
-  const handleSectionClick = (section: string) => {
-    setActiveSection(section === activeSection ? null : section);
+  // Fetch or create session on mount
+  useEffect(() => {
+    if (!subjectId) return;
+    const fetchSessions = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await apiClient.get(`/session/${subjectId}`);
+        const data = res.data;
+        if (data.success && data.data.length > 0) {
+          setSessions(data.data);
+          // If no session param, set it to the first session
+          const currentSession = searchParams.get("session");
+          if (!currentSession && data.data[0]?.sessionId) {
+            updateSessionQuery(data.data[0].sessionId);
+          }
+        } else {
+          // No sessions found, create a new one
+          const createRes = await apiClient.post(`/session/create`, {
+            subjectId,
+            title: `Session ${Math.random().toString(36).substring(7)}`,
+          });
+          const createData = createRes.data;
+          if (createData.success && createData.data) {
+            setSessions([
+              {
+                sessionId: createData.data._id,
+                title: createData.data.title,
+                lastActivity: createData.data.lastActivity,
+                isActive: createData.data.isActive,
+              },
+            ]);
+            updateSessionQuery(createData.data._id);
+          } else {
+            setError(createData.message || "Failed to create session");
+          }
+        }
+      } catch (err: unknown) {
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch sessions"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSessions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subjectId]);
+
+  // Handler for New Chat
+  const handleNewChat = async () => {
+    if (!subjectId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const createRes = await apiClient.post(`/session/create`, {
+        subjectId,
+        title: `Session ${Math.random().toString(36).substring(7)}`,
+      });
+      const createData = createRes.data;
+      if (createData.success && createData.data) {
+        const newSession = {
+          sessionId: createData.data._id,
+          title: createData.data.title,
+          lastActivity: createData.data.lastActivity,
+          isActive: createData.data.isActive,
+        };
+        setSessions((prev) => [newSession, ...prev]);
+        updateSessionQuery(createData.data._id);
+      } else {
+        setError(createData.message || "Failed to create session");
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to create session");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Handler for deleting a session
+  const handleDeleteSession = async (sessionId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiClient.delete(
+        `/session/delete?sessionId=${sessionId}`
+      );
+      const data = res.data;
+      if (data.success) {
+        setSessions((prev) => prev.filter((s) => s.sessionId !== sessionId));
+        // If the deleted session is the current one, update the query param
+        const currentSession = searchParams.get("session");
+        if (currentSession === sessionId) {
+          const remainingSessions = sessions.filter(
+            (s) => s.sessionId !== sessionId
+          );
+          if (remainingSessions.length > 0) {
+            updateSessionQuery(remainingSessions[0].sessionId);
+          } else {
+            // No sessions left, remove query param
+            const url = new URL(window.location.href);
+            url.searchParams.delete("session");
+            router.replace(url.pathname + url.search);
+          }
+        }
+      } else {
+        setError(data.message || "Failed to delete session");
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to delete session");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Memoized handlers for SessionBar
+  const handleSessionClick = useCallback(
+    (sessionId: string) => () => {
+      updateSessionQuery(sessionId);
+    },
+    [updateSessionQuery]
+  );
+
+  const handleSessionDelete = useCallback(
+    (sessionId: string) => () => {
+      handleDeleteSession(sessionId);
+    },
+    [handleDeleteSession]
+  );
 
   return (
-    <div className="w-full h-[300px] lg:h-[calc(100vh-4rem)] my-4">
-      <ScrollArea
-        className="h-[calc(100vh-2rem)] overflow-x-hidden px-4 mb-4"
-        style={{
-          scrollbarWidth: "thin",
-        }}
-      >
-        <div className="space-y-6">
-          {data.chapter_details.map((chapter) => (
-            <div key={chapter.chapter_number} className="space-y-3">
-              <ChapterChip
-                chapter={chapter}
-                isActive={activeChapter === chapter.chapter_number}
-                onClick={() => handleChapterClick(chapter.chapter_number)}
-              />
+    <div
+      className={cn(
+        "fixed inset-y-0 left-0 z-30 w-64 bg-black p-4 transition-transform transform md:relative md:translate-x-0 md:flex md:flex-col",
+        {
+          "-translate-x-full": !isOpen,
+          "translate-x-0": isOpen,
+        }
+      )}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          className="md:hidden"
+        >
+          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </Button>
+      </div>
 
-              {activeChapter === chapter.chapter_number && (
-                <div className="ml-4 grid grid-cols-1 gap-2">
-                  {chapter.section_list.map((section) => (
-                    <SectionChip
-                      key={section}
-                      section={section}
-                      isActive={activeSection === section}
-                      onClick={() => handleSectionClick(section)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+      <Button variant="outline" className="w-full my-4" onClick={handleNewChat}>
+        + New Chat
+      </Button>
+      <ScrollArea className="flex-1 bg-red  h-full">
+        {loading && <div className="p-2 text-muted-foreground">Loading...</div>}
+        {error && <div className="p-2 text-red-500">{error}</div>}
+        {!loading &&
+          !error &&
+          sessions.map((session) => (
+            <SessionBar
+              key={session.sessionId}
+              session={session}
+              onClick={handleSessionClick(session.sessionId)}
+              onDelete={handleSessionDelete(session.sessionId)}
+            />
           ))}
-        </div>
+        <div className="h-4" /> {/* For spacing */}
       </ScrollArea>
     </div>
   );
-};
-
-export default Sidebar;
+}

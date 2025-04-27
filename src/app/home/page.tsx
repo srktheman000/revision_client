@@ -10,13 +10,14 @@ import { fetchUserData } from "@/utils/fetchUserData";
 import { fetchSubjectsByGrade } from "@/utils/fetchSubjectsByGrade";
 import { SubjectDocument } from "@/types/schemaTypes";
 import { useRouter } from "next/navigation";
+import { useUserStore } from "@/store/userStore";
 
 export default function LandingPage() {
   const [selectedGrade, setSelectedGrade] = useState<number>(6);
   const [selectedSubject, setSelectedSubject] =
     useState<SubjectDocument | null>(null);
   const router = useRouter();
-
+  const { setUserData } = useUserStore();
   // Fetch user using useAPI
   const [userState, fetchUser] = useAPI(fetchUserData);
   const { data: user, loading: userLoading, error: userError } = userState;
@@ -34,6 +35,9 @@ export default function LandingPage() {
   // Fetch user on mount
   useEffect(() => {
     fetchUser();
+    if (user) {
+      setUserData(user);
+    }
     fetchSubjects(selectedGrade);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -131,3 +131,40 @@ export type MessageType =
   | ListMessage
   | QuizMessage
   | SummaryMessage;
+
+// Existing types
+export interface Subject {
+  id: string;
+  name: string;
+  description?: string;
+  gradeId: string;
+  imageUrl?: string;
+}
+
+// New types for chat
+export interface ChatMessage {
+  id: string;
+  content: string;
+  sender: string;
+  timestamp: string;
+  userId?: string;
+  user?: {
+    name: string;
+    avatar?: string;
+  };
+}
+
+export interface ChatSession {
+  id: string;
+  subjectId: string;
+  messages: ChatMessage[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Topic {
+  id: string;
+  name: string;
+  subjectId: string;
+  description?: string;
+}
