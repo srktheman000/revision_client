@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils"; // If you don't have cn, I can show you how to write it
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area"; // From shadcn
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowLeft } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import apiClient from "@/lib/apiClient";
 import SessionBar from "./SessionBar";
@@ -31,12 +31,15 @@ export function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   const [error, setError] = useState<string | null>(null);
 
   // Helper to update the session query param
-  const updateSessionQuery = (sessionId: string) => {
-    console.log("Updating session query param:", sessionId);
-    const url = new URL(window.location.href);
-    url.searchParams.set("session", sessionId);
-    router.replace(url.pathname + url.search);
-  };
+  const updateSessionQuery = useCallback(
+    (sessionId: string) => {
+      console.log("Updating session query param:", sessionId);
+      const url = new URL(window.location.href);
+      url.searchParams.set("session", sessionId);
+      router.replace(url.pathname + url.search);
+    },
+    [router]
+  );
 
   // Fetch or create session on mount
   useEffect(() => {
@@ -118,40 +121,45 @@ export function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   };
 
   // Handler for deleting a session
-  const handleDeleteSession = async (sessionId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await apiClient.delete(
-        `/session/delete?sessionId=${sessionId}`
-      );
-      const data = res.data;
-      if (data.success) {
-        setSessions((prev) => prev.filter((s) => s.sessionId !== sessionId));
-        // If the deleted session is the current one, update the query param
-        const currentSession = searchParams.get("session");
-        if (currentSession === sessionId) {
-          const remainingSessions = sessions.filter(
-            (s) => s.sessionId !== sessionId
-          );
-          if (remainingSessions.length > 0) {
-            updateSessionQuery(remainingSessions[0].sessionId);
-          } else {
-            // No sessions left, remove query param
-            const url = new URL(window.location.href);
-            url.searchParams.delete("session");
-            router.replace(url.pathname + url.search);
+  const handleDeleteSession = useCallback(
+    async (sessionId: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await apiClient.delete(
+          `/session/delete?sessionId=${sessionId}`
+        );
+        const data = res.data;
+        if (data.success) {
+          setSessions((prev) => prev.filter((s) => s.sessionId !== sessionId));
+          // If the deleted session is the current one, update the query param
+          const currentSession = searchParams.get("session");
+          if (currentSession === sessionId) {
+            const remainingSessions = sessions.filter(
+              (s) => s.sessionId !== sessionId
+            );
+            if (remainingSessions.length > 0) {
+              updateSessionQuery(remainingSessions[0].sessionId);
+            } else {
+              // No sessions left, remove query param
+              const url = new URL(window.location.href);
+              url.searchParams.delete("session");
+              router.replace(url.pathname + url.search);
+            }
           }
+        } else {
+          setError(data.message || "Failed to delete session");
         }
-      } else {
-        setError(data.message || "Failed to delete session");
+      } catch (err: unknown) {
+        setError(
+          err instanceof Error ? err.message : "Failed to delete session"
+        );
+      } finally {
+        setLoading(false);
       }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to delete session");
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [router, searchParams, sessions, updateSessionQuery]
+  );
 
   // Memoized handlers for SessionBar
   const handleSessionClick = useCallback(
@@ -179,6 +187,17 @@ export function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
       )}
     >
       <div className="flex items-center justify-between mb-4">
+        {/* Back button to go to previous page ("/home") */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.push("/home")}
+          className="mr-2"
+        >
+          <span className="sr-only">Back</span>
+          <ArrowLeft className="w-6 h-6" />
+        </Button>
+        {/* Sidebar toggle button for mobile */}
         <Button
           variant="ghost"
           size="icon"

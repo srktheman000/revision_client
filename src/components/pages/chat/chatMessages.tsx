@@ -48,11 +48,19 @@ export function ChatMessages({
 
   return (
     <div ref={containerRef} className="space-y-4 h-full overflow-y-auto">
-      {messages.map((msg) => (
-        <ChatMessage key={msg.id} role={msg.role} content={msg.content} />
-      ))}
       {isLoading && (
         <div className="text-center text-xs text-gray-400">Loading...</div>
+      )}
+      {messages.length > 0 ? (
+        messages.map((msg, idx) => (
+          <ChatMessage
+            key={msg.id ?? idx}
+            role={msg.role}
+            content={msg.content}
+          />
+        ))
+      ) : (
+        <div className="text-center text-xs text-gray-400">No messages yet</div>
       )}
     </div>
   );
